@@ -1,0 +1,61 @@
+schema_version: 1
+package:
+  id: docs.python-devguide
+  version: 1.0.1
+  package_root: global
+generated_at: '2026-11-11T06:17:15.183017+00:00'
+load_policy:
+  default: on_demand
+  heavy_resources: index_only_until_requested
+  do_not_load_full_content: true
+resources:
+- id: root
+  kind: documentation
+  title: Python Developer's Guide Markdown Mirror
+  description: Selected upstream documents; see resources/README.md and sources.json
+    for coverage, original URLs and snapshot dates.
+  path_ref:
+    package: docs.python-devguide
+    relative_path: resources
+  load_policy: on_demand
+  index_policy: fulltext
+  license:
+    name: Per-document upstream licenses; see NOTICE.md and sources.json
+    path: NOTICE.md
+  source:
+    kind: local_snapshot
+    upstream:
+    - https://devguide.python.org/
+    provenance: sources.json
+    description: Existing Markdown snapshot, redistributed without changing document
+      bytes.
+  update_policy:
+    mode: package_release
+    description: Versioned package releases reviewed and published by WebTolk.
+  versioning:
+    mode: single_current
+    version_field: version
+    instance_id_template: '{id}@{version}'
+  retention:
+    policy: replace_in_place
+    keep_last_n: null
+  snapshot_behavior:
+    on_new_version: notify_only
+    on_current_generation_changed: notify_only
+    on_instance_missing: broken
+    reproducibility: exact
+  path_status: available
+  version: 1.0.1
+  indexing:
+    enabled: true
+    mode: fulltext
+    fields:
+    - title
+    - description
+    - tags
+    sources:
+    - path: .
+      mode: fulltext
+      include:
+      - '**/*.md'
+  package: docs.python-devguide

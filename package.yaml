@@ -1,0 +1,102 @@
+schema_version: 1
+id: docs.python-devguide
+name: Python Developer's Guide
+title: Python Developer's Guide
+kind: documentation
+scope: workplace
+version: 1.0.1
+status: active
+description: Selected Markdown snapshot of the official Python Developer's Guide for
+  contributing to CPython and Python documentation.
+visibility: public
+load_policy: on_demand
+dependencies:
+- docs.python
+resources:
+- id: root
+  kind: documentation
+  title: Python Developer's Guide Markdown Mirror
+  description: Selected upstream documents; see resources/README.md and sources.json
+    for coverage, original URLs and snapshot dates.
+  path_ref:
+    package: docs.python-devguide
+    relative_path: resources
+  load_policy: on_demand
+  index_policy: fulltext
+  license:
+    name: Per-document upstream licenses; see NOTICE.md and sources.json
+    path: NOTICE.md
+  source:
+    kind: local_snapshot
+    upstream:
+    - https://devguide.python.org/
+    provenance: sources.json
+    description: Existing Markdown snapshot, redistributed without changing document
+      bytes.
+  update_policy:
+    mode: package_release
+    description: Versioned package releases reviewed and published by WebTolk.
+  versioning:
+    mode: single_current
+    version_field: version
+    instance_id_template: '{id}@{version}'
+  retention:
+    policy: replace_in_place
+    keep_last_n: null
+  snapshot_behavior:
+    on_new_version: notify_only
+    on_current_generation_changed: notify_only
+    on_instance_missing: broken
+    reproducibility: exact
+  path_status: available
+  version: 1.0.1
+  indexing:
+    enabled: true
+    mode: fulltext
+    fields:
+    - title
+    - description
+    - tags
+    sources:
+    - path: .
+      mode: fulltext
+      include:
+      - '**/*.md'
+indexes:
+  resource_index: indexes/resource-index.yaml
+tags:
+- documentation
+- knowledge
+- python
+- devguide
+- cpython
+- contribution
+generation:
+  generator: WebTolk knowledge package extraction
+  generated_at: '2026-11-11T06:17:15.183017+00:00'
+package_root: global
+type: knowledge_package
+update_sites:
+- id: webtolk-python-devguide
+  enabled: true
+  manifest_url: https://github.com/WebTolk/pf-python-devguide-knowledge/releases/latest/download/python-devguide.json
+  changelog_url: https://github.com/WebTolk/pf-python-devguide-knowledge/releases/latest/download/CHANGELOG.md
+  channel: stable
+  priority: 10
+  trust:
+    require_https: true
+    require_sha256: true
+    allow_unsigned: true
+    signature_required: false
+  policy:
+    check_interval_hours: 24
+    auto_check: true
+    auto_stage: false
+    auto_apply: false
+    notify_operator: true
+    allow_stage: true
+    allow_apply: true
+    backup_before_apply: true
+navigation:
+  documentation:
+  - resources/README.md

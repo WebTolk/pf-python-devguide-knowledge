@@ -1,0 +1,438 @@
+---
+title: Pull Request Lifecycle
+source_url: https://devguide.python.org/getting-started/pull-request-lifecycle/
+source_type: official_documentation
+mirrored_at: 2026-10-02T05:37:05+00:00
+package: docs.python-devguide
+---
+
+# Pull Request Lifecycle
+
+Source: <https://devguide.python.org/getting-started/pull-request-lifecycle/>
+
+How CPython pull requests move through review and merge.
+
+#Lifecycle of a pull request¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#lifecycle-of-a-pull-request)
+
+Introduction¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#introduction)
+
+CPython uses a workflow based on pull requests. What this means is that you create a branch in Git, make your changes, push those changes to your fork on GitHub (`origin`), and then create a pull request against the official CPython repository (`upstream`).
+
+For a cheat-sheet reference, see the quick reference on creating pull requests (https://devguide.python.org/getting-started/quick-reference/#pullrequest-quickguide).
+
+Step-by-step guide¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#step-by-step-guide)
+
+You should have already set up your system (https://devguide.python.org/getting-started/setup-building/#setup), got the source code (https://devguide.python.org/getting-started/setup-building/#checkout), and built Python (https://devguide.python.org/getting-started/setup-building/#compiling).
+
+Update data from your `upstream` repository:
+
+git fetch upstream
+
+```
+
+Create a new branch in your local clone from the `main` branch in the upstream repository:
+
+git checkout -b branch-name upstream/main
+
+```
+
+Note
+
+Almost all changes to Python, including bug fixes, should first be made against the `main` branch. See here (https://devguide.python.org/getting-started/pull-request-lifecycle/#good-prs) for more details.
+
+Make changes to the code, and use `gitstatus` and `gitdiff` to see them.
+
+(Learn more about Making good PRs (https://devguide.python.org/getting-started/pull-request-lifecycle/#good-prs))
+
+Make sure the changes are fine and don’t cause any test failure:
+
+make patchcheck
+./python -m test
+
+```
+
+(Learn more about patchcheck (https://devguide.python.org/getting-started/pull-request-lifecycle/#patchcheck) and about Running and writing tests (https://devguide.python.org/testing/run-write-tests/#runtests))
+
+Once you are satisfied with the changes, add the files and commit them:
+
+git add filenames
+git commit -m 'message'
+
+```
+
+(Learn more about Making good commits (https://devguide.python.org/getting-started/pull-request-lifecycle/#good-commits))
+
+If your code isn’t linted correctly, pre-commit (https://devguide.python.org/getting-started/setup-building/#install-pre-commit) will block the commit with an error message, for example:
+
+Doc/library/stdtypes.rst:5718: No newline at end of file. (missing-final-newline)
+
+```
+
+Once all linting errors have been fixed, you can push your work to your GitHub fork:
+
+git push origin branch-name
+
+```
+
+Finally go on `https://github.com/*your-username*/cpython`: you will see a box with the branch you just pushed and a green button that allows you to create a pull request against the official CPython repository.
+
+When people start adding review comments, you can address them by switching to your branch, making more changes, committing them, and pushing them to automatically update your PR:
+
+git switch branch-name
+# make changes and run tests
+git add filenames
+git commit -m 'message'
+git push origin branch-name
+
+```
+
+If a core team member reviewing your PR pushed one or more commits to your PR branch, then after checking out your branch and before editing, run:
+
+git pull origin branch-name  # pull = fetch + merge
+
+```
+
+If you have made local changes that have not been pushed to your fork and there are merge conflicts, Git will warn you about this and enter conflict resolution mode. See Resolving merge conflicts (https://devguide.python.org/getting-started/pull-request-lifecycle/#resolving-merge-conflicts) below.
+
+If time passes and there are merge conflicts with the main branch, GitHub will show a warning to this end and you may be asked to address this. Merge the changes from the main branch while resolving the conflicts locally:
+
+git switch branch-name
+git pull upstream main  # pull = fetch + merge
+# resolve conflicts: see "Resolving Merge Conflicts" below
+git push origin branch-name
+
+```
+
+After your PR has been accepted and merged, you can delete the branch (https://devguide.python.org/getting-started/git-boot-camp/#deleting-branches):
+
+git branch -D branch-name  # delete local branch
+git push origin -d branch-name  # delete remote branch
+
+```
+
+Resolving merge conflicts¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#resolving-merge-conflicts)
+
+When merging changes from different branches (or variants of a branch on different repos), the two branches may contain incompatible changes to one or more files. These are called “merge conflicts” and need to be manually resolved as follows:
+
+Check which files have merge conflicts:
+
+git status
+
+```
+
+Edit the affected files and bring them to their intended final state. Make sure to remove the special “conflict markers” inserted by Git.
+
+Commit the affected files:
+
+git add filenames
+git merge --continue
+
+```
+
+When running the final command, Git may open an editor for writing a commit message. It is usually okay to leave that as-is and close the editor.
+
+See the merge command’s documentation (https://git-scm.com/docs/git-merge) for a detailed technical explanation.
+
+Don’t force-push¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#don-t-force-push)
+
+In order to keep the commit history intact, avoid squashing or amending history and then force-pushing to the PR. Reviewers often want to look at individual commits.
+
+CPython uses squash merges, so PRs will end up as single commits when merged.
+
+Making good PRs¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#making-good-prs)
+
+When creating a pull request for submission, there are several things that you should do to help ensure that your pull request is accepted.
+
+**Make your change against the right version of Python.** In general all changes are made against the `main` branch first. This includes bug fixes. After the change is merged there, it will be ported back (https://devguide.python.org/getting-started/git-boot-camp/#branch-merge) to older maintenance releases (https://devguide.python.org/versions/#branchstatus) as well. That way we ensure all affected versions are handled. Therefore, basing a new change directly on a maintenance branch is only used in specific circumstances, for instance when that change does not apply to `main` or the change requires a different approach in an older Python version compared to `main`.
+
+**Make sure to follow Python’s style guidelines.** For Python code you should follow **PEP 8** (https://peps.python.org/pep-0008/), and for C code you should follow **PEP 7** (https://peps.python.org/pep-0007/). If you have one or two discrepancies those can be fixed by the core team member who merges your pull request. But if you have systematic deviations from the style guides your pull request will be put on hold until you fix the formatting issues.
+
+Note
+
+Pull requests with only code formatting changes are usually rejected. On the other hand, fixes for typos and grammar errors in documents and docstrings are welcome.
+
+**Be aware of backwards-compatibility considerations.** While the core developer who eventually handles your pull request will make the final call on whether something is acceptable, thinking about backwards-compatibility early will help prevent having your pull request rejected on these grounds. Put yourself in the shoes of someone whose code will be broken by the change(s) introduced by the pull request. It is quite likely that any change made will break someone’s code, so you need to have a good reason to make a change as you will be forcing someone to update their code. (This obviously does not apply to new classes or functions; new arguments should be optional and have default values which maintain the existing behavior.) If in doubt, have a look at **PEP 387** (https://peps.python.org/pep-0387/) or discuss (https://devguide.python.org/developer-workflow/communication-channels/#communication) the issue with experienced developers.
+
+**Make sure you have proper tests** to verify your pull request works as expected. Pull requests will not be accepted without the proper tests!
+
+**Make sure all tests pass.** The entire test suite needs to run (https://devguide.python.org/testing/run-write-tests/#runtests)**without failure** because of your changes. It is not sufficient to only run whichever test seems impacted by your changes, because there might be interferences unknown to you between your changes and some other part of the interpreter.
+
+**Keep your pull request focused and small.** A pull request should address one issue or add one feature. Combining multiple unrelated changes makes a pull request harder to review and increases the number of people notified unnecessarily.
+
+Proper documentation (https://devguide.python.org/documentation/start-documenting/#documenting) additions/changes should be included.
+
+Updating NEWS and What’s New in Python¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#updating-news-and-what-s-new-in-python)
+
+Changes that require NEWS entries¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#changes-that-require-news-entries)
+
+Most changes made to the codebase deserve an entry in Misc/NEWS.d (https://github.com/python/cpython/blob/main/Misc/NEWS.d), except for the following:
+
+documentation changes
+
+test changes
+
+strictly internal changes with no user-visible effects
+
+changes that already have a `NEWS` entry
+
+reverts that have not yet been included in any formal release (including alpha and beta releases)
+
+For the last two, note the following:
+
+**If a change is reverted prior to release**, then the corresponding entry is simply removed. Otherwise, a new entry must be added noting that the change has been reverted (for example, when a feature is released in an alpha and then cut prior to the first beta).
+
+**If a change is a fix (or other adjustment) to an earlier unreleased change and the original**`NEWS`**entry remains valid**, then no additional entry is needed.
+
+Changes that require “What’s New in Python” entries¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#changes-that-require-what-s-new-in-python-entries)
+
+If a change is particularly interesting for end users (for example, new features, significant improvements, or backwards-incompatible changes), add an entry in the “What’s New in Python” document (in Doc/whatsnew/ (https://github.com/python/cpython/blob/main/Doc/whatsnew/), the 3.X.rst file where X is the current Python version) in addition to the `NEWS` entry.
+
+In most cases, it is sufficient to reuse the wording from the `NEWS` entry in the “What’s New in Python” entry.
+
+Note
+
+A change that needs an entry in “What’s New in Python” is very likely not suitable for inclusion in a maintenance release.
+
+How to add a NEWS entry¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#how-to-add-a-news-entry)
+
+`NEWS` entries go into the `Misc/NEWS.d` directory as individual files. The `NEWS` entry can be created by using blurb-it (https://blurb-it.herokuapp.com/), or the blurb (https://pypi.org/project/blurb/) tool and its `blurbadd` command.
+
+Tip
+
+You can read more about `blurb` in its repository (https://github.com/python/blurb).
+
+If you are unable to use the tool, then you can create the `NEWS` entry file manually. The `Misc/NEWS.d` directory contains a sub-directory named `next`, which contains various sub-directories representing classifications for what was affected (for example, `Misc/NEWS.d/next/Library` for changes relating to the standard library). The file name itself should be in the format `datetime.gh-issue-issue-number.nonce.rst`:
+
+`datetime` is today’s date joined with a hyphen (`-`) to your current local time, in the `YYYY-MM-DD-hh-mm-ss` format (for example, `2017-05-27-16-46-23`).
+
+`issue-number` is the issue number the change is for (for example, `12345` for `gh-issue-12345`).
+
+`nonce` is a unique string to guarantee that the file name is unique across branches (for example, `Yl4gI2`). It is typically six characters long, but it can be any length of letters and numbers. Its uniqueness can be satisfied by typing random characters on your keyboard.
+
+As a result, a file name can look something like `Misc/NEWS.d/next/Library/2017-05-27-16-46-23.gh-issue-12345.Yl4gI2.rst`.
+
+How to write a NEWS entry¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#how-to-write-a-news-entry)
+
+All `NEWS` entries end up being part of the changelog. The changelog contains *a lot* of entries, and its intended audience is mainly users, not core devs and contributors. Take this into consideration when wording your `NEWS` entry. Describe the user-visible effects of your change succinctly and accurately; avoid long technical elaborations, digressions, and do not expect or require the reader to have read the actual diff for the change.
+
+The contents of a `NEWS` file should be valid reStructuredText. An 80 character column width should be used. There is no indentation or leading marker in the file (for example, `-`). There is also no need to start the entry with the issue number since it is part of the file name. You can use inline markups (https://devguide.python.org/documentation/markup/#rest-inline-markup) too. Here is an example of a `NEWS` entry:
+
+Fix warning message when :func:`os.chdir` fails inside
+:func:`test.support.temp_cwd`. Contributed by Chris Jerdonek.
+
+```
+
+The inline Sphinx roles like `:func:` can be used help readers find more information. You can build HTML and verify that the link target is appropriate by using make html (https://devguide.python.org/documentation/start-documenting/#building-using-make).
+
+Copyrights¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#copyrights)
+
+Copyright notices are optional and informational, as international treaties have abolished the requirement for them to protect copyrights. However, they still serve an informative role.
+
+According to the US Copyright Office, valid copyright notices include the year of first publication of the work. For example:
+
+Copyright (C) 2001 Python Software Foundation.
+
+Updating notices to add subsequent years is unnecessary and such PRs will be closed.
+
+See also python/cpython#126133 (https://github.com/python/cpython/issues/126133#issuecomment-2460824052).
+
+Typo fixes¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#typo-fixes)
+
+Fixing typos and grammatical errors in documentation is a contribution that does not require a linked issue. The most appropriate place for such fixes are the Doc/ (https://github.com/python/cpython/blob/main/Doc/) (end-user documentation) and InternalDocs/ (https://github.com/python/cpython/blob/main/InternalDocs/) directories.
+
+Keep typo-fix PRs **small and focused**. Large PRs that touch many unrelated files notify a large number of reviewers unnecessarily and are harder to review. Large typo-fix PRs, or PRs touching directories outside those listed above, may be closed with a reference to this section.
+
+`patchcheck`¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#patchcheck)
+
+`patchcheck` is a simple automated checklist for changes in progress that guides a developer through common checks. To run `patchcheck`:
+
+On *Unix* (including macOS):
+
+make patchcheck
+
+```
+
+On *Windows* (after any successful build):
+
+.\python.bat Tools\patchcheck\patchcheck.py
+
+```
+
+The automated checklist runs through:
+
+Has the documentation been updated?
+
+Has the test suite been updated?
+
+Has an entry under `Misc/NEWS.d/next` been added? (using blurb-it (https://blurb-it.herokuapp.com/), or the blurb (https://pypi.org/project/blurb/) tool)
+
+Has `configure` been regenerated, if necessary?
+
+Has `pyconfig.h.in` been regenerated, if necessary?
+
+This will help you remember things that you need to check before submitting a complete pull request.
+
+Making good commits¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#making-good-commits)
+
+Each feature or bugfix should be addressed by a single pull request, and for each pull request there may be several commits. In particular:
+
+Do **not** fix more than one issue in the same commit (except, of course, if one code change fixes all of them).
+
+Do **not** do cosmetic changes to unrelated code in the same commit as some feature/bugfix.
+
+Commit messages should follow the following structure:
+
+Make the spam module more spammy
+
+The spam module sporadically came up short on spam. This change
+raises the amount of spam in the module by making it more spammy.
+
+```
+
+The first line or sentence is meant to be a dense, to-the-point explanation of what the purpose of the commit is. The imperative form (used in the example above) is strongly preferred to a descriptive form such as ‘the spam module is now more spammy’. Use `gitlog--oneline` to see existing title lines. Furthermore, the first line should not end in a period.
+
+If this is not enough detail for a commit, a new paragraph(s) can be added to explain in proper depth what has happened (detail should be good enough that a core team member reading the commit message understands the justification for the change).
+
+Check the Git bootcamp (https://devguide.python.org/getting-started/git-boot-camp/#accepting-and-merging-a-pr) for further instructions on how the commit message should look like when merging a pull request.
+
+Note
+
+How to Write a Git Commit Message (https://cbea.ms/git-commit/) is a nice article that describes how to write a good commit message.
+
+Licensing¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#licensing)
+
+To accept your change we must have your formal approval for distributing your work under the PSF license (https://docs.python.org/dev/license.html#terms-and-conditions-for-accessing-or-otherwise-using-python). Therefore, you need to sign a contributor agreement (https://www.python.org/psf/contrib/) which allows the Python Software Foundation (https://www.python.org/psf-landing/) to license your code for use with Python (you retain the copyright).
+
+Note
+
+You only have to sign this document once, it will then apply to all your further contributions to Python.
+
+Here are the steps needed in order to sign the CLA:
+
+Create a change and submit it as a pull request.
+
+When `python-cla-bot` comments on your pull request that commit authors are required to sign a Contributor License Agreement, click on the button in the comment to sign it. Log in with GitHub, click “Authorize Python CLA Bot”, and then click “Sign”.
+
+After signing, the comment by `python-cla-bot` will update to indicate that “all commit authors signed the Contributor License Agreement”.
+
+Why do I need to sign the CLA again?¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#why-do-i-need-to-sign-the-cla-again)
+
+Sometimes the CLA bot asks you to sign the CLA for a backport PR, when you’ve already signed it for the original PR. This is because you need to sign the CLA for all the email addresses you commit with.
+
+This can happen when you’ve configured your Git client (https://docs.github.com/en/account-and-profile/how-tos/email-preferences/setting-your-commit-email-address) with one email address, and signed the CLA with this, but have configured your GitHub account (https://github.com/settings/emails) with another primary email (often this is the private `id+usernameusers.noreply.github.com` address).
+
+In the original PR, the CLA bot verifies all the emails in the commits have signed the CLA.
+
+We then squash merge the PR, which creates a single new commit using the author’s primary email. This can be different from the one you originally committed with.
+
+Backports often only have this new single commit. The CLA bot then checks if the primary email has signed the CLA.
+
+The solution is to click the CLA not signed – click to sign button in the backport PR.
+
+Tip
+
+Run `gitconfiguser.email` to see your Git client config, and append `.patch` to a PR URL to see the emails used for its commits:
+
+https://github.com/python/cpython/pull/1 (https://github.com/python/cpython/pull/1)
+
+https://github.com/python/cpython/pull/1.patch (https://github.com/python/cpython/pull/1.patch)
+
+Submitting¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#submitting)
+
+Once you are satisfied with your work you will want to commit your changes to your branch. In general you can run `gitcommit-a` and that will commit everything. You can always run `gitstatus` to see what changes are outstanding.
+
+When all of your changes are committed (that is, `gitstatus` doesn’t list anything), you will want to push your branch to your fork:
+
+git push origin branch name
+
+```
+
+This will get your changes up to GitHub.
+
+Now you want to create a pull request from your fork (https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork). If this is a pull request in response to a pre-existing issue on the issue tracker (https://github.com/python/cpython/issues), please make sure to reference the issue number using `gh-NNNNN:` prefix in the pull request title and `#NNNNN` in the description.
+
+If this is a pull request for an unreported issue (assuming you already performed a search on the issue tracker for a pre-existing issue), create a new issue and reference it in the pull request. Please fill in as much relevant detail as possible to prevent reviewers from having to delay reviewing your pull request because of lack of information.
+
+If this issue is so simple that there’s no need for an issue to track any discussion of what the pull request is trying to solve (for example, fixing a spelling mistake), then the pull request needs to have the “skip issue” label added to it by someone with commit access.
+
+Your pull request may involve several commits as a result of addressing code review comments. Please keep the commit history in the pull request intact by not squashing, amending, or anything that would require a force push to GitHub. A detailed commit history allows reviewers to view the diff of one commit to another so they can easily verify whether their comments have been addressed. The commits will be squashed when the pull request is merged.
+
+Converting an existing patch from b.p.o to GitHub¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#converting-an-existing-patch-from-b-p-o-to-github)
+
+When a patch exists in the issue tracker (https://github.com/python/cpython/issues) that should be converted into a GitHub pull request, please first ask the original patch author to prepare their own pull request. If the author does not respond after a week, it is acceptable for another contributor to prepare the pull request based on the existing patch. In this case, both parties should sign the CLA (https://devguide.python.org/getting-started/pull-request-lifecycle/#cla). When creating a pull request based on another person’s patch, provide attribution to the original patch author by adding “Co-authored-by: Author Name email_address .” to the pull request description and commit message. See the GitHub article (https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors) on how to properly add the co-author info.
+
+See also Applying a Patch to Git (https://devguide.python.org/getting-started/git-boot-camp/#git-from-patch).
+
+Reviewing¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#reviewing)
+
+To begin with, please be patient! There are many more people submitting pull requests than there are people capable of reviewing your pull request. Getting your pull request reviewed requires a reviewer to have the spare time and motivation to look at your pull request (we cannot force anyone to review pull requests and no one is employed to look at pull requests). If your pull request has not received any notice from reviewers (that is, no comment made) after one month, first “ping” the issue on the issue tracker (https://github.com/python/cpython/issues) to remind the subscribers that the pull request needs a review. If you don’t get a response within a week after pinging the issue, you can post on the Core Development Discourse category (https://discuss.python.org/c/core-dev/23) to ask for someone to review your pull request.
+
+When someone does manage to find the time to look at your pull request they will most likely make comments about how it can be improved (don’t worry, even core team members of Python have their pull requests sent back to them for changes). It is then expected that you update your pull request to address these comments, and the review process will thus iterate until a satisfactory solution has emerged.
+
+How to review a pull request¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#how-to-review-a-pull-request)
+
+One of the bottlenecks in the Python development process is the lack of code reviews. If you browse the bug tracker, you will see that numerous issues have a fix, but cannot be merged into the main source code repository, because no one has reviewed the proposed solution. Reviewing a pull request can be just as informative as providing a pull request and it will allow you to give constructive comments on another developer’s work. This guide provides a checklist for submitting a code review. It is a common misconception that in order to be useful, a code review has to be perfect. This is not the case at all! It is helpful to just test the pull request and/or play around with the code and leave comments in the pull request or issue tracker.
+
+If you have not already done so, get a copy of the CPython repository by following the setup guide (https://devguide.python.org/getting-started/setup-building/#setup), build it and run the tests.
+
+Check the bug tracker to see what steps are necessary to reproduce the issue and confirm that you can reproduce the issue in your version of the Python REPL (the interactive shell prompt), which you can launch by executing ./python inside the repository.
+
+Checkout and apply the pull request (Please refer to the instruction Checking out others’ pull requests (https://devguide.python.org/getting-started/git-boot-camp/#git-pr))
+
+If the changes affect any C file, run the build again.
+
+Launch the Python REPL (the interactive shell prompt) and check if you can reproduce the issue. Now that the pull request has been applied, the issue should be fixed (in theory, but mistakes do happen! A good review aims to catch these before the code is merged into the Python repository). You should also try to see if there are any corner cases in this or related issues that the author of the fix may have missed.
+
+If you have time, run the entire test suite. If you are pressed for time, run the tests for the module(s) where changes were applied. However, please be aware that if you are recommending a pull request as ‘merge-ready’, you should always make sure the entire test suite passes.
+
+Leaving a pull request review on GitHub¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#leaving-a-pull-request-review-on-github)
+
+When you review a pull request, you should provide additional details and context of your review process.
+
+Instead of simply “approving” the pull request, leave comments. For example:
+
+If you tested the PR, report the result and the system and version tested on, such as ‘Windows 10’, ‘Ubuntu 16.4’, or ‘Mac High Sierra’.
+
+If you request changes, try to suggest how.
+
+Comment on what is “good” about the pull request, not just the “bad”. Doing so will make it easier for the PR author to find the good in your comments.
+
+Look at any failures in CI on the current PR. See “Keeping CI green” (https://devguide.python.org/getting-started/pull-request-lifecycle/#keeping-ci-green) below for simple things you can do to help move the PR forward.
+
+Dismissing review from another core team member¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#dismissing-review-from-another-core-team-member)
+
+A core team member can dismiss another team member’s review if they confirmed that the requested changes have been made. When a core team member has assigned the PR to themselves, then it is a sign that they are actively looking after the PR, and their review should not be dismissed.
+
+Keeping continuous integration green¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#keeping-continuous-integration-green)
+
+Our change management workflows generally won’t allow merging PRs with failures. Therefore, if you see a CI failure on a PR, have a look what it is about.
+
+Usually the failure will be directly related to the changes in the current PR. If you happen to have any insight into the failure, let the author know in a review comment. CI runs sometimes generate thousands of lines of output. Even something as simple as finding the traceback and putting it in the comment will be helpful to the PR author.
+
+If the failure doesn’t look related to the change you’re looking at, check if it’s not present on the Release Status (https://buildbot.python.org/all/#/release_status) Buildbot dashboard as well. If so, that means the failure was introduced in a prior change. Using Buildbot’s UI you can find which PR introduced the issue and comment that it affects other PRs.
+
+If you still don’t see where the failure originates from, check for a “This branch is out-of-date with the base branch” sign next to the list of executed checks. Clicking Update branch next to this message will merge in the latest changes from the base branch into the PR.
+
+If this still doesn’t help with the failure on the PR, you can try to re-run that particular failed check. Note that the Re-run jobs button is only visible to members of the core and triage team. If you have those permissions, go to the failed GitHub Action job, click Re-run jobs on the top right, and select Re-run failed jobs. The button is only present once all other jobs have finished.
+
+If don’t have access to the button, ask a member of the teams to re-run the jobs for you. Alternatively, you can re-trigger CI yourself by pushing an empty commit, or by updating your branch with the Update branch button.
+
+Re-running failed jobs shouldn’t be your first instinct but it is occasionally helpful because distributed systems can have intermittent failures, and some of our unit tests are sensitive to overloaded virtual machines. If you identify such flaky behavior, look for an issue in the issue tracker (https://github.com/python/cpython/issues) that describes this particular flakiness. Create a new issue if you can’t find one.
+
+Update branch button¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#update-branch-button)
+
+You can click on the Update branch button to merge the latest changes from the base branch (usually `main`) into the PR. This is useful to keep the CI green (https://devguide.python.org/getting-started/pull-request-lifecycle/#keeping-ci-green) for old PRs, or to check if a CI failure has been fixed in the base branch.
+
+If the PR is very old, it may be useful to update the branch before merging to ensure that the PR does not fail any CI checks that were added or changed since CI last ran.
+
+Do not click Update branch without a good reason because it notifies everyone watching the PR that there are new changes, when there are not, and it uses up limited CI resources.
+
+Committing/rejecting¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#committing-rejecting)
+
+Once your pull request has reached an acceptable state (and thus considered “accepted”), it will either be merged or rejected. If it is rejected, please do not take it personally! Your work is still appreciated regardless of whether your pull request is merged. Balancing what *does* and *does not* go into Python is tricky and we simply cannot accept everyone’s contributions.
+
+But if your pull request is merged it will then go into Python’s VCS (version control system) to be released with the next feature release of Python. It may also be backported to older versions of Python as a bugfix if the core team member doing the merge believes it is warranted.
+
+Crediting¶ (https://devguide.python.org/getting-started/pull-request-lifecycle/#crediting)
+
+Non-trivial contributions are often credited in What’s New in Python and a contributions’s news entry as well.

@@ -1,0 +1,11 @@
+# Maintaining docs.python-devguide
+
+Preserve package id `docs.python-devguide` and resource id `root`. Review changes on a branch before merging. Update only selected official sources, keep attribution and exact capture dates, and record every added/changed document's SHA-256 and applicable license in `sources.json`. Do not replace the per-document license map with one blanket license. No private registries, absolute workstation paths or credentials belong here.
+
+For each release, bump the package and resource versions and the index together, add a changelog entry, and validate with the target PF `knowledge-package-doctor`. Build the ZIP with paths relative to this repository using only: `package.yaml`, `resources/`, `indexes/`, `licenses/`, `sources.json`, `NOTICE.md`, `CHANGELOG.md`. Check the resulting archive in a fresh workplace whose directory differs from the author's machine; verify resource lookup and indexing. Test native update and rollback before publishing.
+
+Publish a `v<version>` Git tag and GitHub Release with `docs.python-devguide-<version>.zip`, `python-devguide.json`, `CHANGELOG.md` and `SHA256SUMS`. The JSON uses the PF `processforge.update_manifest` format: subject type `knowledge_package`, id `docs.python-devguide`, `channels.stable.latest`, and `channels.stable.versions[]` entries with version, released_at, download_url, sha256 and changelog_url. Keep older released versions in the manifest. Download URLs must point to immutable version-specific release assets; the package's discovery URL remains the stable `releases/latest/download/python-devguide.json` URL. Do not overwrite an existing release artifact; publish a new version for corrections.
+
+Download the published ZIP again and compare its digest with the release manifest. Release notes must state the source snapshot dates and scope; publication of a package is not evidence that every upstream document is current or that every Python version was tested.
+
+The checked-in `updates/` manifest pins the release digest. `.github/workflows/package-checks.yml` contains the exact reproducible ZIP recipe and checks its bytes, install, update and file rollback on Windows and Linux using a fixed PF revision. Review and update the manifest with each release; keep discovery URLs stable.

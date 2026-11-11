@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "package": "docs.python-devguide",
+  "version": "1.0.1",
+  "extracted_at": "2026-11-11T06:17:15.183017+00:00",
+  "document_bytes_preserved": true,
+  "note": "Selected pre-existing snapshots, not a fresh upstream crawl or a complete documentation mirror. Upstream commit ids were not recorded during the original crawl.",
+  "documents": [
+    {
+      "path": "resources/communication.md",
+      "sha256": "1a0c31f44bc540e17a3e04d4937a2447672100645eb1140b4ddd747128c64913",
+      "source_url": null,
+      "mirrored_at": null,
+      "license": "Original snapshot navigation; constituent documents retain their own terms"
+    },
+    {
+      "path": "resources/core-developers.md",
+      "sha256": "bbda2d56a89dfe98050470446407f6e2b4a05791b5ee53989bf5e2c081db4346",
+      "source_url": null,
+      "mirrored_at": null,
+      "license": "Original snapshot navigation; constituent documents retain their own terms"
+    },
+    {
+      "path": "resources/developer-workflow.md",
+      "sha256": "531046e77d906307e172227e2e954009db99011c7b67b3b46f056603d7db3685",
+      "source_url": null,
+      "mirrored_at": null,
+      "license": "Original snapshot navigation; constituent documents retain their own terms"
+    },
+    {
+      "path": "resources/documentation.md",
+      "sha256": "0e3429f0afcb1138c2bc53291e217fe1f248375e6b640ebd8f8c6abff39bc1f3",
+      "source_url": null,
+      "mirrored_at": null,
+      "license": "Original snapshot navigation; constituent documents retain their own terms"
+    },
+    {
+      "path": "resources/help-triage.md",
+      "sha256": "efe01ad94099ad88f70c5ebc138ba467f89264213b5518b697075deafe0f3801",
+      "source_url": null,
+      "mirrored_at": null,
+      "license": "Original snapshot navigation; constituent documents retain their own terms"
+    },
+    {
+      "path": "resources/index.md",
+      "sha256": "b400f71262b36cfefc2114efaa17a2b0d3314848018dae0ea667bcc49cee4ff5",
+      "source_url": null,
+      "mirrored_at": null,
+      "license": "Original snapshot navigation; constituent documents retain their own terms"
+    },
+    {
+      "path": "resources/pull-request-lifecycle.md",
+      "sha256": "d839ff6baa9acebf7ad75d691ae64e43a4361d65b9f8e1034158043527aa0ff9",
+      "source_url": null,
+      "mirrored_at": null,
+      "license": "Original snapshot navigation; constituent documents retain their own terms"
+    },
+    {
+      "path": "resources/README.md",
+      "sha256": "36f2ddceb8a34d65f0f40c2e8ce79e3861c60bf1cc5d3e55f54ea4dd00dc6005",
+      "source_url": null,
+      "mirrored_at": null,
+      "license": "Original snapshot navigation; constituent documents retain their own terms"
+    },
+    {
+      "path": "resources/setup-building.md",
+      "sha256": "037d3cc6a9ea8aa684e523ea6340ea16d03000f44b2450b20ac4c68a34cb35b3",
+      "source_url": null,
+      "mirrored_at": null,
+      "license": "Original snapshot navigation; constituent documents retain their own terms"
+    },
+    {
+      "path": "resources/setup.md",
+      "sha256": "de8c5c41a021d2e281657dfc512ad6fbe960bdb8499d5f27f464b820aac53553",
+      "source_url": null,
+      "mirrored_at": null,
+      "license": "Original snapshot navigation; constituent documents retain their own terms"
+    },
+    {
+      "path": "resources/testing.md",
+      "sha256": "4d04728427ba53d27c831763f015cb9e754cae8a2200413041211c5bae7c4509",
+      "source_url": null,
+      "mirrored_at": null,
+      "license": "Original snapshot navigation; constituent documents retain their own terms"
+    }
+  ],
+  "license_sources": [
+    {
+      "path": "licenses/DEVGUIDE-LICENSE.txt",
+      "source": "https://github.com/python/devguide/blob/main/LICENSE",
+      "git_blob_sha": "4594fb738451be2147f68c09954732d7a306727e"
+    }
+  ]
+}

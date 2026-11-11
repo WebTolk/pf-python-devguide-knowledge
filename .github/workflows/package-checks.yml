@@ -1,0 +1,115 @@
+name: Package checks
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    env:
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          path: knowledge
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: WebTolk/process-forge
+          ref: 8ebacb61f3ef45d299f76ade828960b6e478ff0a
+          path: pf
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: github.event.repository.name != 'pf-python-knowledge'
+        with:
+          repository: WebTolk/pf-python-knowledge
+          ref: v1.0.1
+          path: dependency
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r pf/requirements.txt
+      - name: Check exact archive and native install, update and rollback
+        shell: python
+        run: |
+          import copy
+          import hashlib
+          import json
+          import os
+          import shutil
+          import subprocess
+          import sys
+          import zipfile
+          from pathlib import Path
+          import yaml
+
+          root = Path('knowledge').resolve()
+          core = Path('pf').resolve()
+          workplace = Path(os.environ['RUNNER_TEMP']) / 'relocated PF workplace'
+          package = yaml.safe_load((root / 'package.yaml').read_text(encoding='utf-8'))
+          identity = package['id']
+          version = package['version']
+          sources = json.loads((root / 'sources.json').read_text(encoding='utf-8'))
+          for document in sources['documents']:
+              assert hashlib.sha256((root / document['path']).read_bytes()).hexdigest() == document['sha256']
+          manifest = json.loads((root / 'updates' / 'python-devguide.json').read_text(encoding='utf-8'))
+          release = next(v for v in manifest['channels']['stable']['versions'] if v['version'] == version)
+          archive = Path(os.environ['RUNNER_TEMP']) / (identity + '-' + version + '.zip')
+          allowed = {'package.yaml', 'resources', 'indexes', 'licenses', 'sources.json', 'NOTICE.md', 'CHANGELOG.md'}
+          with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_STORED) as output:
+              for file in sorted(root.rglob('*'), key=lambda p: p.relative_to(root).as_posix()):
+                  if file.is_file() and file.relative_to(root).parts[0] in allowed:
+                      info = zipfile.ZipInfo(file.relative_to(root).as_posix(), (2026, 11, 11, 0, 0, 0))
+                      info.create_system = 3
+                      info.compress_type = zipfile.ZIP_STORED
+                      info.external_attr = 0o100644 << 16
+                      output.writestr(info, file.read_bytes())
+          assert hashlib.sha256(archive.read_bytes()).hexdigest() == release['sha256']
+
+          def pf(*args):
+              subprocess.run([sys.executable, str(core / 'bin/pf.py'), *map(str, args)], cwd=core, check=True)
+
+          def write_yaml(path, data):
+              path.write_text(yaml.safe_dump(data, sort_keys=False), encoding='utf-8')
+
+          pf('workplace-init', '--workplace', workplace, '--profile', 'generic', '--apply')
+          dependency = Path('dependency')
+          if dependency.exists():
+              dep = yaml.safe_load((dependency / 'package.yaml').read_text(encoding='utf-8'))
+              shutil.copytree(dependency, workplace / 'packages' / dep['id'], ignore=shutil.ignore_patterns('.git', '.github'))
+          installed = workplace / 'packages' / identity
+          with zipfile.ZipFile(archive) as source:
+              source.extractall(installed)
+          pf('knowledge-package-doctor', '--workplace', workplace, '--package', identity, '--package-root', 'global')
+          pf('knowledge-index-refresh', '--workplace', workplace, '--package', identity, '--package-root', 'global', '--apply')
+          local_manifest = copy.deepcopy(manifest)
+          local_release = next(v for v in local_manifest['channels']['stable']['versions'] if v['version'] == version)
+          local_release['download_url'] = archive.as_uri()
+          local_release['changelog_url'] = (root / 'CHANGELOG.md').as_uri()
+          source_path = workplace / 'local-update.json'
+          source_path.write_text(json.dumps(local_manifest), encoding='utf-8')
+          previous = copy.deepcopy(package)
+          previous['version'] = '1.0.0'
+          previous['update_sites'][0]['manifest_url'] = source_path.as_uri()
+          previous['update_sites'][0]['changelog_url'] = local_release['changelog_url']
+          previous['update_sites'][0]['trust']['require_https'] = False
+          write_yaml(installed / 'package.yaml', previous)
+          before = (installed / 'package.yaml').read_bytes()
+          write_yaml(workplace / 'registries/installed-subjects.yaml', {'schema_version': 1, 'subjects': [
+              {'type': 'knowledge_package', 'id': identity, 'scope': 'workplace', 'version': '1.0.0',
+               'install_path': installed.relative_to(workplace).as_posix()}]})
+          pf('update', 'entity-sources', 'rebuild', '--workplace', workplace)
+          pf('update', 'candidates', 'refresh', '--workplace', workplace)
+          candidates = json.loads((workplace / 'runtime/update/candidates.json').read_text(encoding='utf-8'))['candidates']
+          candidate = next(c for c in candidates if c['subject']['id'] == identity)
+          for action in ('stage', 'verify', 'apply'):
+              pf('update', action, '--workplace', workplace, '--candidate', candidate['id'], *(['--confirm'] if action == 'apply' else []))
+          assert yaml.safe_load((installed / 'package.yaml').read_text(encoding='utf-8'))['version'] == version
+          pf('knowledge-package-doctor', '--workplace', workplace, '--package', identity, '--package-root', 'global')
+          pf('update', 'rollback', '--workplace', workplace, '--candidate', candidate['id'])
+          assert (installed / 'package.yaml').read_bytes() == before
+          print('PASS: source hashes, exact archive, relocated install, indexing, native update, file rollback')
